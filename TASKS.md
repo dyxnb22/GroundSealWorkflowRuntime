@@ -2,9 +2,16 @@
 
 ## Now (Post Phase 9)
 
-- [ ] Concurrent FileStorage locking and migration strategy.
-- [ ] External IdP validation for approver_id in adapter layer.
-- [ ] General workflow graph loading beyond `fixture_approval_v1`.
+- [ ] DAG workflow graphs (beyond linear node lists).
+- [ ] Cross-process lock retry policy for FileStorage.
+
+## Completed (Post-Review Advancement v0.3.0)
+
+- [x] Concurrent FileStorage locking (`fcntl` per-run locks)
+- [x] Storage migration v1→v2 (`ensure_storage_ready`, `_meta/version.json`)
+- [x] External IdP validation hook (`ApproverValidator` in adapter)
+- [x] Workflow registry + JSON graph loading (`workflows/*.json`)
+- [x] Tests (88), docs: [workflow-definition.md](docs/contracts/workflow-definition.md)
 
 ## Completed (Code Review Polish)
 

@@ -6,15 +6,16 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from groundseal.adapter.auth import ApproverValidator
 from groundseal.diagnostics import DiagnosticReport, build_diagnostic_report
 from groundseal.errors import GroundSealError
 from groundseal.models import Interrupt, ResumeInput, RunInitialState, RunState
 from groundseal.runtime import Runtime
 
+SUBSYSTEM_VERSION = "0.3.0"
+
 
 class PlatformRunRequest(BaseModel):
-    """Adapter-local request envelope — tenancy stays outside core RunState."""
-
     model_config = ConfigDict(extra="forbid")
 
     tenant_id: str = Field(min_length=1)
@@ -29,7 +30,7 @@ class PlatformEvidence(BaseModel):
     tenant_id: str
     caller_id: str
     correlation_id: str | None = None
-    subsystem_version: str = "0.1.0"
+    subsystem_version: str = SUBSYSTEM_VERSION
 
 
 ResultType = Literal["run_state", "interrupt", "error"]
@@ -49,8 +50,14 @@ class PlatformRunResponse(BaseModel):
 class PlatformAdapter:
     """Boundary layer: validates adapter fields, delegates to runtime, wraps evidence."""
 
-    def __init__(self, runtime: Runtime) -> None:
+    def __init__(
+        self,
+        runtime: Runtime,
+        *,
+        approver_validator: ApproverValidator | None = None,
+    ) -> None:
         self._runtime = runtime
+        self._approver_validator = approver_validator
 
     def get_diagnostic_report(self, run_id: str) -> DiagnosticReport:
         return build_diagnostic_report(self._runtime, run_id)
@@ -105,6 +112,21 @@ class PlatformAdapter:
                     message="tenant_id and caller_id are required",
                 ).to_dict(),
             )
+
+        if self._approver_validator is not None and resume_input.approval.approved:
+            try:
+                self._approver_validator.validate(
+                    tenant_id=tenant_id,
+                    approver_id=resume_input.approval.approver_id,
+                    run_id=resume_input.run_id,
+                )
+            except GroundSealError as exc:
+                return PlatformRunResponse(
+                    evidence=evidence,
+                    result_type="error",
+                    error=exc.to_dict(),
+                )
+
         try:
             outcome = self._runtime.resume(resume_input)
         except GroundSealError as exc:
@@ -129,7 +151,7 @@ class PlatformAdapter:
         include_diagnostic: bool,
         tenant_id: str,
     ) -> PlatformRunResponse:
-        run_id = outcome.run_id if isinstance(outcome, Interrupt) else outcome.run_id
+        run_id = outcome.run_id
         diag = build_diagnostic_report(self._runtime, run_id) if include_diagnostic else None
 
         if isinstance(outcome, Interrupt):

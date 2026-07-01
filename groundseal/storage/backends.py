@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import json
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Protocol
+from typing import Iterator, Protocol
 
 from groundseal.errors import GroundSealError
 from groundseal.models import Checkpoint, RunState
 from groundseal.storage.io import atomic_write_text, validate_storage_id
+from groundseal.storage.locking import FileLock
+from groundseal.storage.migration import ensure_storage_ready
 
 
 class StorageBackend(Protocol):
@@ -58,15 +61,24 @@ class MemoryStorage:
 
 
 class FileStorage:
-    """JSON file persistence for durable multi-session runs (Phase 6)."""
+    """JSON file persistence with per-run file locking (storage v2)."""
 
     def __init__(self, root: Path | str) -> None:
         self._root = Path(root).resolve()
+        ensure_storage_ready(self._root)
         self._runs_dir = self._root / "runs"
         self._checkpoints_dir = self._root / "checkpoints"
         self._patches_dir = self._root / "patches"
-        for d in (self._runs_dir, self._checkpoints_dir, self._patches_dir):
+        self._locks_dir = self._root / "_meta" / "locks"
+        for d in (self._runs_dir, self._checkpoints_dir, self._patches_dir, self._locks_dir):
             d.mkdir(parents=True, exist_ok=True)
+
+    @contextmanager
+    def _run_lock(self, run_id: str) -> Iterator[None]:
+        validate_storage_id(run_id, field="run_id")
+        lock = FileLock(self._locks_dir / f"{run_id}.lock")
+        with lock.acquire():
+            yield
 
     def _run_path(self, run_id: str) -> Path:
         safe_id = validate_storage_id(run_id, field="run_id")
@@ -91,8 +103,9 @@ class FileStorage:
         return self._checkpoints_dir / f"_index_{safe_id}.json"
 
     def save_run(self, state: RunState) -> None:
-        path = self._run_path(state.run_id)
-        atomic_write_text(path, state.model_dump_json(indent=2) + "\n")
+        with self._run_lock(state.run_id):
+            path = self._run_path(state.run_id)
+            atomic_write_text(path, state.model_dump_json(indent=2) + "\n")
 
     def load_run(self, run_id: str) -> RunState | None:
         path = self._run_path(run_id)
@@ -108,15 +121,16 @@ class FileStorage:
             ) from exc
 
     def save_checkpoint(self, checkpoint: Checkpoint) -> None:
-        path = self._checkpoint_path(checkpoint.checkpoint_id)
-        atomic_write_text(path, checkpoint.model_dump_json(indent=2) + "\n")
-        index_path = self._index_path(checkpoint.run_id)
-        ids: list[str] = []
-        if index_path.exists():
-            ids = json.loads(index_path.read_text())
-        if checkpoint.checkpoint_id not in ids:
-            ids.append(checkpoint.checkpoint_id)
-            atomic_write_text(index_path, json.dumps(ids, indent=2) + "\n")
+        with self._run_lock(checkpoint.run_id):
+            path = self._checkpoint_path(checkpoint.checkpoint_id)
+            atomic_write_text(path, checkpoint.model_dump_json(indent=2) + "\n")
+            index_path = self._index_path(checkpoint.run_id)
+            ids: list[str] = []
+            if index_path.exists():
+                ids = json.loads(index_path.read_text())
+            if checkpoint.checkpoint_id not in ids:
+                ids.append(checkpoint.checkpoint_id)
+                atomic_write_text(index_path, json.dumps(ids, indent=2) + "\n")
 
     def load_checkpoint(self, checkpoint_id: str) -> Checkpoint | None:
         path = self._checkpoint_path(checkpoint_id)
@@ -144,8 +158,9 @@ class FileStorage:
         return patch_id in json.loads(path.read_text())
 
     def mark_patch_applied(self, run_id: str, patch_id: str) -> None:
-        path = self._patches_path(run_id)
-        ids: list[str] = json.loads(path.read_text()) if path.exists() else []
-        if patch_id not in ids:
-            ids.append(patch_id)
-            atomic_write_text(path, json.dumps(ids, indent=2) + "\n")
+        with self._run_lock(run_id):
+            path = self._patches_path(run_id)
+            ids: list[str] = json.loads(path.read_text()) if path.exists() else []
+            if patch_id not in ids:
+                ids.append(patch_id)
+                atomic_write_text(path, json.dumps(ids, indent=2) + "\n")

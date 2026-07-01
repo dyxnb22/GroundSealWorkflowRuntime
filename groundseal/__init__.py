@@ -15,7 +15,7 @@ from groundseal.models import (
 )
 from groundseal.runtime import InMemoryRuntime, Runtime, apply_patch, emit_checkpoint, resume, run
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 __all__ = [
     "__version__",
