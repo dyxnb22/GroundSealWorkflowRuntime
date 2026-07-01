@@ -43,8 +43,8 @@ An interrupt occurs when:
 ### Resume Rules
 
 1. Reject if Run is not `interrupted` → `RUN_NOT_INTERRUPTED`.
-2. Reject if `approval.approved` is false → `APPROVAL_DENIED` (Run → `failed`).
-3. Load checkpoint; reject if stale or mismatched → `STALE_CHECKPOINT` / `CHECKPOINT_RUN_MISMATCH`.
+2. Reject if `approval.approved` is false → `APPROVAL_DENIED`. Default policy (`FAIL_RUN`) sets Run → `failed`; optional `REMAIN_INTERRUPTED` keeps Run `interrupted`.
+3. Load checkpoint; reject if missing → `CHECKPOINT_NOT_FOUND`; stale → `STALE_CHECKPOINT`; wrong run → `CHECKPOINT_RUN_MISMATCH`.
 4. Apply approval token to context via internal patch (increments version).
 5. Continue node execution from interrupted node; on success proceed to next fixture node.
 6. Return updated RunState (may be terminal or interrupted again).

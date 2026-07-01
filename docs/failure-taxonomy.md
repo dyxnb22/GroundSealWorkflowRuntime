@@ -21,7 +21,9 @@ Machine-readable failure codes and regression fixture mapping.
 | `DUPLICATE_PATCH` | 3 | Patch replay on same run | yes |
 | `PATCH_ON_TERMINAL` | 2 | Patch on terminal state | yes |
 | `INVARIANT_VIOLATION` | 1 | Invariant check failed | yes |
-| `NODE_NOT_FOUND` | 2 | Unknown node handler | yes |
+| `CHECKPOINT_NOT_FOUND` | 3 | Checkpoint ID not found | yes |
+| `STORAGE_CORRUPT` | polish | Corrupt persisted JSON | yes |
+| `INVALID_STORAGE_ID` | polish | Unsafe storage identifier | yes |
 
 ## Regression Fixtures
 

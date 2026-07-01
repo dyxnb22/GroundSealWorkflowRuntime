@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from groundseal.errors import GroundSealError
-from groundseal.models import Approval, Patch, ResumeInput, RunInitialState, RunState, RunStatus
+from groundseal.models import Approval, Patch, PatchOperation, ResumeInput, RunInitialState, RunState, RunStatus
 from groundseal.runtime import InMemoryRuntime, apply_patch
 from groundseal.validation import validate_resume_input, validate_run_initial
 
@@ -55,9 +55,11 @@ class TestMalformedResume:
         initial = RunInitialState(
             workflow_id="fixture_approval_v1",
             run_id="fail-resume-terminal-001",
-            context={"_approval_granted": True},
+            context={},
         )
-        rt.run(initial)
+        from tests.conftest import run_to_completion
+
+        run_to_completion(rt, initial)
         with pytest.raises(GroundSealError) as exc:
             rt.resume(
                 ResumeInput(
@@ -71,8 +73,14 @@ class TestMalformedResume:
 class TestAdversarialPatch:
     def test_unsupported_op_rejected(self) -> None:
         state = RunState.model_validate(_load("running_state.json"))
-        patch = Patch.model_validate(_load("patch_unsupported_op.json"))
+        patch = Patch(
+            patch_id="fail-patch-001",
+            target_version=1,
+            operations=[PatchOperation.model_construct(op="replace", path="context.x", value=1)],
+        )
         with pytest.raises(GroundSealError) as exc:
+            from groundseal.runtime import apply_patch
+
             apply_patch(state, patch, clock=CLOCK)
         assert exc.value.code == "INVALID_PATCH"
 
@@ -106,6 +114,15 @@ class TestMalformedRunInitial:
             validate_run_initial(initial)
         assert exc.value.code == "INVALID_INITIAL_STATE"
 
+    def test_reserved_context_key_rejected(self) -> None:
+        initial = RunInitialState(
+            workflow_id="fixture_approval_v1",
+            context={"_approval_granted": True},
+        )
+        with pytest.raises(GroundSealError) as exc:
+            validate_run_initial(initial)
+        assert exc.value.code == "INVALID_INITIAL_STATE"
+
 
 class TestCheckpointMismatch:
     def test_wrong_checkpoint_run_id_on_resume(self) -> None:
@@ -125,4 +142,4 @@ class TestCheckpointMismatch:
                     approval=Approval(approved=True, approver_id="reviewer"),
                 )
             )
-        assert exc.value.code == "STALE_CHECKPOINT"
+        assert exc.value.code == "CHECKPOINT_NOT_FOUND"

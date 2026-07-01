@@ -2,7 +2,6 @@
   "workflow_id": "fixture_approval_v1",
   "run_id": "11111111-1111-1111-1111-111111111111",
   "context": {
-    "branch_key": "a",
-    "_approval_granted": true
+    "branch_key": "a"
   }
 }

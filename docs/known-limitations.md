@@ -35,11 +35,11 @@ Honest scope boundaries after Phase 6.
 
 ## Diagnostics
 
-- Structured errors and eval JSON reports only; no operator UI (Phase 7).
+- Structured errors, eval JSON reports, and `DiagnosticReport` summaries; no operator UI (Phase 7 scope).
 
 ## Testing
 
-- 51+ pytest cases and 7 eval scenarios; production load and concurrency untested.
+- 70 pytest cases and 7 eval scenarios; production load and concurrency untested.
 
 ## What Phases 2–9 Prove
 

@@ -114,7 +114,7 @@ def run_storage_backend_experiment(tmp_dir: Path | None = None) -> ExperimentRep
         StorageBackendComparison(
             backend="memory",
             completes=mem_completes,
-            survives_restart=mem_completes,
+            survives_restart=False,
             checkpoint_count=mem_cps,
             file_count=0,
         ).to_dict(),
@@ -143,7 +143,7 @@ def run_approval_policy_experiment() -> ExperimentReport:
         run_id = f"exp-deny-{policy.value}"
         initial = RunInitialState(workflow_id="fixture_approval_v1", run_id=run_id, context={})
         interrupt = rt.run(initial)
-        assert isinstance(interrupt, Interrupt)
+        assert isinstance(interrupt, Interrupt), "Expected interrupt at approval gate"
 
         error_code = ""
         try:
