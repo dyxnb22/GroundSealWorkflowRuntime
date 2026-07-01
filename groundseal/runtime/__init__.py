@@ -11,6 +11,7 @@ from groundseal.errors import GroundSealError
 from groundseal.invariants import check_checkpoint_invariants, check_run_state_invariants
 from groundseal.models import (
     TERMINAL_STATUSES,
+    ApprovalDenialPolicy,
     BranchDecision,
     Checkpoint,
     CheckpointReason,
@@ -131,9 +132,16 @@ def emit_checkpoint(
 class Runtime:
     """Workflow runtime with pluggable storage backend."""
 
-    def __init__(self, *, storage: StorageBackend | None = None, clock: str | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        storage: StorageBackend | None = None,
+        clock: str | None = None,
+        denial_policy: ApprovalDenialPolicy = ApprovalDenialPolicy.FAIL_RUN,
+    ) -> None:
         self._storage = storage or MemoryStorage()
         self._clock = clock
+        self._denial_policy = denial_policy
 
     def get_run(self, run_id: str) -> RunState:
         state = self._storage.load_run(run_id)
@@ -261,6 +269,15 @@ class Runtime:
             )
 
         if not resume_input.approval.approved:
+            if self._denial_policy == ApprovalDenialPolicy.REMAIN_INTERRUPTED:
+                raise GroundSealError(
+                    code="APPROVAL_DENIED",
+                    message="Approval was denied; run remains interrupted",
+                    details={
+                        "approver_id": resume_input.approval.approver_id,
+                        "policy": self._denial_policy.value,
+                    },
+                )
             failed = state.model_copy(deep=True)
             failed.status = RunStatus.FAILED
             failed.current_node_id = None
@@ -373,6 +390,14 @@ class Runtime:
         checkpoint = emit_checkpoint(state, reason=reason, clock=self._clock)
         self._storage.save_checkpoint(checkpoint)
         return checkpoint
+
+    def list_checkpoints(self, run_id: str) -> list[Checkpoint]:
+        result: list[Checkpoint] = []
+        for cp_id in self._storage.list_checkpoint_ids(run_id):
+            cp = self._storage.load_checkpoint(cp_id)
+            if cp is not None:
+                result.append(cp)
+        return result
 
 
 class InMemoryRuntime(Runtime):

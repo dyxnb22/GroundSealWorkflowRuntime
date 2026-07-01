@@ -51,27 +51,22 @@
 
 ## Phase 7: Operator And Reviewer Experience
 
+- **Status**: complete
 - Goal: improve legibility of outputs, diagnostics, or human review flow.
-- Why it matters: a subsystem that cannot be reviewed will not be trusted.
-- Required artifacts: display models, report templates, review UX notes.
-- Evaluation criteria: humans can inspect the subsystem without reverse-engineering it.
-- Exit criteria: evidence and outcomes are understandable to non-authors.
-- Common risks: polish replacing clarity, overbuilt UI before stable contracts.
+- Artifacts: `groundseal/diagnostics/`, [contracts/diagnostic-report.md](contracts/diagnostic-report.md), [review-ux-notes.md](review-ux-notes.md).
+- Exit criteria: met — reviewers can inspect runs via summary, narrative, and hints without reading runtime code.
 
 ## Phase 8: Comparative Experiments
 
+- **Status**: complete
 - Goal: compare at least two meaningful approaches or policies.
-- Why it matters: this is where judgment becomes visible.
-- Required artifacts: experiment notes, observed tradeoffs, decision memo.
-- Evaluation criteria: tradeoffs are evidence-backed rather than taste-driven.
-- Exit criteria: the project demonstrates reasoning, not just implementation volume.
-- Common risks: comparison without controls, no clear conclusion.
+- Artifacts: `groundseal/evaluation/experiments.py`, [experiments/](experiments/), `tests/test_experiments.py`.
+- Exit criteria: met — storage backend and approval denial policies compared with evidence-backed conclusions.
 
 ## Phase 9: Case Study And Integration Backfeed
 
+- **Status**: complete
 - Goal: summarize what this project changed in the broader platform understanding.
-- Why it matters: the subsystem should teach something reusable.
-- Required artifacts: case study, integration recommendations, residual risks.
-- Evaluation criteria: the subsystem is credible as a standalone project and a reusable layer.
-- Exit criteria: external readers can understand both the build and the lessons.
-- Common risks: retrospective storytelling unsupported by artifacts.
+- Artifacts: [case-study.md](case-study.md), [integration-recommendations.md](integration-recommendations.md).
+- Exit criteria: met — external readers can understand build, lessons, and integration path.
+

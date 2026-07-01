@@ -7,6 +7,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 
 from groundseal.errors import GroundSealError
+from groundseal.diagnostics import DiagnosticReport, build_diagnostic_report, format_run_summary_text
 from groundseal.models import Interrupt, ResumeInput, RunInitialState, RunState
 from groundseal.runtime import Runtime
 
@@ -39,6 +40,7 @@ class PlatformRunResponse(BaseModel):
     run_state: RunState | None = None
     interrupt: Interrupt | None = None
     error: dict[str, Any] | None = None
+    diagnostic: DiagnosticReport | None = None
 
 
 class PlatformAdapter:
@@ -47,7 +49,10 @@ class PlatformAdapter:
     def __init__(self, runtime: Runtime) -> None:
         self._runtime = runtime
 
-    def start_run(self, request: PlatformRunRequest) -> PlatformRunResponse:
+    def get_diagnostic_report(self, run_id: str) -> DiagnosticReport:
+        return build_diagnostic_report(self._runtime, run_id)
+
+    def start_run(self, request: PlatformRunRequest, *, include_diagnostic: bool = False) -> PlatformRunResponse:
         evidence = PlatformEvidence(
             tenant_id=request.tenant_id,
             caller_id=request.caller_id,
@@ -63,16 +68,20 @@ class PlatformAdapter:
             )
 
         if isinstance(outcome, Interrupt):
+            diag = build_diagnostic_report(self._runtime, outcome.run_id) if include_diagnostic else None
             return PlatformRunResponse(
                 evidence=evidence,
                 result_type="interrupt",
                 interrupt=outcome,
+                diagnostic=diag,
             )
         self._assert_no_tenant_leak(outcome, request.tenant_id)
+        diag = build_diagnostic_report(self._runtime, outcome.run_id) if include_diagnostic else None
         return PlatformRunResponse(
             evidence=evidence,
             result_type="run_state",
             run_state=outcome,
+            diagnostic=diag,
         )
 
     def resume_run(
