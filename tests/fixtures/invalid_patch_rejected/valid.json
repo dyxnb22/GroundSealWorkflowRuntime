@@ -1,0 +1,18 @@
+{
+  "run_id": "33333333-3333-3333-3333-333333333333",
+  "state_version": 1,
+  "status": "running",
+  "current_node_id": "node_prepare",
+  "node_results": {},
+  "branch_decisions": [],
+  "context": {"key": "value"},
+  "created_at": "2026-07-01T00:00:00Z",
+  "updated_at": "2026-07-01T00:00:00Z",
+  "patch": {
+    "patch_id": "55555555-5555-5555-5555-555555555555",
+    "target_version": 1,
+    "operations": [
+      {"op": "set", "path": "context.approval_token", "value": "ok"}
+    ]
+  }
+}

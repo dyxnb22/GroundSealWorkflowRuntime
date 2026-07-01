@@ -57,12 +57,19 @@ Many agent runtimes blur planning, execution, and side effects. This project iso
 - `docs/execution-rhythm.md` — how to keep long-running agent work disciplined.
 - `docs/integration-contract.md` — how this project will plug back into larger systems.
 - `docs/open-questions.md` — unresolved research and implementation questions.
+- `docs/glossary.md` — canonical subsystem vocabulary.
+- `docs/contracts/` — typed contract definitions.
+- `docs/invariants.md` — rules that must always hold.
+- `docs/dev-setup.md` — local development and tech stack.
+- `docs/known-limitations.md` — Phase 2 scope boundaries.
 
 ## Current Stage
 
-Stage 0 is complete only when the project has clear contracts, explicit
-non-goals, phase boundaries, evaluation intent, and Cursor rules strong enough
-to keep parallel implementation work on track.
+Phase 2 (Deterministic Core Slice) is complete. The project has typed contracts, Pydantic schemas, invariant enforcement, an in-memory runtime, and 30 deterministic tests covering five evaluation case categories.
+
+Next: Phase 3 — expand failure handling and negative-path coverage.
+
+See [docs/roadmap.md](docs/roadmap.md) and [docs/known-limitations.md](docs/known-limitations.md).
 
 ## Relationship To The Parent Platform
 

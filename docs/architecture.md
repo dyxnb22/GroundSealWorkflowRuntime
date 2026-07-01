@@ -7,9 +7,9 @@ boundaries, main components, and integration seams.
 
 ## Core Responsibilities
 
-- state models, node contracts, checkpoints, approval interruption, resume semantics, deterministic branching, and workflow diagnostics
-- Provide stable contracts that a larger workflow system can call into.
-- Support deterministic local testing and narrow staged implementation.
+GroundSealWorkflowRuntime owns **Run** lifecycle, authoritative **RunState**, **Node** execution contracts, **Patch** validation, **Checkpoint** emission, **Interrupt/Resume** semantics, deterministic **Branch** decisions, and workflow diagnostics evidence.
+
+See [glossary.md](glossary.md) for canonical terms.
 
 ## Conceptual Components
 
@@ -43,3 +43,7 @@ boundaries, main components, and integration seams.
 Start with the thinnest slice that proves the subsystem contract, then add
 richer storage, adapters, or UI only after baseline correctness and evaluation
 scaffolding exist.
+
+## Contract References
+
+Typed contracts live in [contracts/](contracts/). The public API surface is defined in [contracts/public-api.md](contracts/public-api.md).
