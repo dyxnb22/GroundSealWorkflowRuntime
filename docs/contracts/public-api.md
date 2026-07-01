@@ -29,7 +29,7 @@ Define the narrow public surface for GroundSealWorkflowRuntime.
 
 See [interrupt-resume.md](interrupt-resume.md).
 
-**Errors**: `RUN_NOT_FOUND`, `RUN_NOT_INTERRUPTED`, `APPROVAL_DENIED`, `STALE_CHECKPOINT`
+**Errors**: `RUN_NOT_FOUND`, `RUN_NOT_INTERRUPTED`, `RUN_TERMINAL`, `INVALID_RESUME_INPUT`, `APPROVAL_DENIED`, `STALE_CHECKPOINT`
 
 ---
 

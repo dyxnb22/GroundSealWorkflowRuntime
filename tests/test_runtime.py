@@ -122,7 +122,7 @@ class TestStaleCheckpoint:
         state = rt.get_run(interrupt.run_id)
         bumped = state.model_copy(deep=True)
         bumped.state_version += 5
-        rt._runs[state.run_id] = bumped  # test-only: simulate drift
+        rt._storage.save_run(bumped)  # test-only: simulate drift
 
         with pytest.raises(GroundSealError) as exc:
             rt.resume(
@@ -156,8 +156,9 @@ class TestEmitCheckpoint:
         rt = InMemoryRuntime(clock=CLOCK)
         state = RunState.model_validate(_load("run_state/valid_running.json"))
         cp = rt.emit_checkpoint(state)
-        assert cp.state_snapshot.state_version == state.state_version
-        assert cp.checkpoint_id in rt._checkpoints
+        loaded = rt._storage.load_checkpoint(cp.checkpoint_id)
+        assert loaded is not None
+        assert loaded.state_snapshot.state_version == state.state_version
 
     def test_deterministic_repeat_runs(self) -> None:
         """Same fixture run three times yields consistent structure."""

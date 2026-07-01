@@ -23,6 +23,8 @@ from groundseal.models import (
     RunState,
     RunStatus,
 )
+from groundseal.storage import MemoryStorage, StorageBackend
+from groundseal.validation import validate_resume_input, validate_run_initial
 
 FIXTURE_WORKFLOW_ID = "fixture_approval_v1"
 
@@ -36,10 +38,6 @@ ALLOWED_PATCH_PREFIX = "context."
 
 def _now(clock: str | None) -> str:
     return clock or "2026-07-01T00:00:00Z"
-
-
-def _new_id(prefix: str = "") -> str:
-    return f"{prefix}{uuid.uuid4()}" if prefix else str(uuid.uuid4())
 
 
 def branch_select(context: dict[str, Any]) -> BranchDecision:
@@ -130,24 +128,21 @@ def emit_checkpoint(
     return checkpoint
 
 
-class InMemoryRuntime:
-    """Phase 2 in-memory runtime with checkpoint store."""
+class Runtime:
+    """Workflow runtime with pluggable storage backend."""
 
-    def __init__(self, *, clock: str | None = None) -> None:
+    def __init__(self, *, storage: StorageBackend | None = None, clock: str | None = None) -> None:
+        self._storage = storage or MemoryStorage()
         self._clock = clock
-        self._runs: dict[str, RunState] = {}
-        self._checkpoints: dict[str, Checkpoint] = {}
-        self._checkpoints_by_run: dict[str, list[str]] = {}
-        self._applied_patches: dict[str, set[str]] = {}
 
     def get_run(self, run_id: str) -> RunState:
-        if run_id not in self._runs:
+        state = self._storage.load_run(run_id)
+        if state is None:
             raise GroundSealError(code="RUN_NOT_FOUND", message="Run not found", details={"run_id": run_id})
-        return self._runs[run_id]
+        return state
 
     def _store_checkpoint(self, checkpoint: Checkpoint) -> None:
-        self._checkpoints[checkpoint.checkpoint_id] = checkpoint
-        self._checkpoints_by_run.setdefault(checkpoint.run_id, []).append(checkpoint.checkpoint_id)
+        self._storage.save_checkpoint(checkpoint)
 
     def _execute_node_handler(self, node: NodeDefinition, state: RunState) -> dict[str, Any]:
         if node.handler == "prepare":
@@ -182,7 +177,7 @@ class InMemoryRuntime:
                 clock=self._clock,
             )
             self._store_checkpoint(checkpoint)
-            self._runs[state.run_id] = state
+            self._storage.save_run(state)
             return Interrupt(
                 run_id=state.run_id,
                 checkpoint_id=checkpoint.checkpoint_id,
@@ -204,6 +199,8 @@ class InMemoryRuntime:
         return state
 
     def run(self, initial: RunInitialState) -> RunState | Interrupt:
+        validate_run_initial(initial)
+
         if initial.workflow_id != FIXTURE_WORKFLOW_ID:
             raise GroundSealError(
                 code="WORKFLOW_NOT_FOUND",
@@ -227,25 +224,26 @@ class InMemoryRuntime:
             updated_at=now,
         )
         check_run_state_invariants(state)
-        self._runs[run_id] = state
-        self._applied_patches[run_id] = set()
+        self._storage.save_run(state)
 
         for node in FIXTURE_NODES:
-            result = self._advance_node(self._runs[run_id], node)
+            current = self.get_run(run_id)
+            result = self._advance_node(current, node)
             if isinstance(result, Interrupt):
                 return result
-            self._runs[run_id] = result
+            self._storage.save_run(result)
 
-        final = self._runs[run_id]
+        final = self.get_run(run_id)
         final.status = RunStatus.COMPLETED
         final.current_node_id = None
         final.state_version += 1
         final.updated_at = _now(self._clock)
         check_run_state_invariants(final)
-        self._runs[run_id] = final
+        self._storage.save_run(final)
         return final
 
     def resume(self, resume_input: ResumeInput) -> RunState | Interrupt:
+        validate_resume_input(resume_input)
         state = self.get_run(resume_input.run_id)
 
         if state.status in TERMINAL_STATUSES:
@@ -268,7 +266,7 @@ class InMemoryRuntime:
             failed.current_node_id = None
             failed.state_version += 1
             failed.updated_at = _now(self._clock)
-            self._runs[failed.run_id] = failed
+            self._storage.save_run(failed)
             raise GroundSealError(
                 code="APPROVAL_DENIED",
                 message="Approval was denied",
@@ -277,7 +275,7 @@ class InMemoryRuntime:
 
         checkpoint_id = resume_input.checkpoint_id
         if checkpoint_id is None:
-            ids = self._checkpoints_by_run.get(resume_input.run_id, [])
+            ids = self._storage.list_checkpoint_ids(resume_input.run_id)
             if not ids:
                 raise GroundSealError(
                     code="STALE_CHECKPOINT",
@@ -286,7 +284,7 @@ class InMemoryRuntime:
                 )
             checkpoint_id = ids[-1]
 
-        checkpoint = self._checkpoints.get(checkpoint_id)
+        checkpoint = self._storage.load_checkpoint(checkpoint_id)
         if checkpoint is None:
             raise GroundSealError(
                 code="STALE_CHECKPOINT",
@@ -319,7 +317,7 @@ class InMemoryRuntime:
         restored.state_version += 1
         restored.updated_at = _now(self._clock)
         check_run_state_invariants(restored)
-        self._runs[restored.run_id] = restored
+        self._storage.save_run(restored)
 
         interrupted_node_id = restored.current_node_id
         if interrupted_node_id is None:
@@ -351,20 +349,19 @@ class InMemoryRuntime:
         restored.state_version += 1
         restored.updated_at = _now(self._clock)
         check_run_state_invariants(restored)
-        self._runs[restored.run_id] = restored
+        self._storage.save_run(restored)
         return restored
 
     def apply_patch(self, state: RunState, patch: Patch) -> RunState:
-        applied = self._applied_patches.setdefault(state.run_id, set())
-        if patch.patch_id in applied:
+        if self._storage.has_applied_patch(state.run_id, patch.patch_id):
             raise GroundSealError(
                 code="DUPLICATE_PATCH",
                 message="Patch already applied",
                 details={"patch_id": patch.patch_id},
             )
         updated = apply_patch(state, patch, clock=self._clock)
-        applied.add(patch.patch_id)
-        self._runs[updated.run_id] = updated
+        self._storage.mark_patch_applied(updated.run_id, patch.patch_id)
+        self._storage.save_run(updated)
         return updated
 
     def emit_checkpoint(
@@ -374,5 +371,12 @@ class InMemoryRuntime:
         reason: CheckpointReason = CheckpointReason.SCHEDULED,
     ) -> Checkpoint:
         checkpoint = emit_checkpoint(state, reason=reason, clock=self._clock)
-        self._store_checkpoint(checkpoint)
+        self._storage.save_checkpoint(checkpoint)
         return checkpoint
+
+
+class InMemoryRuntime(Runtime):
+    """Backward-compatible alias using in-memory storage."""
+
+    def __init__(self, *, clock: str | None = None) -> None:
+        super().__init__(storage=MemoryStorage(), clock=clock)

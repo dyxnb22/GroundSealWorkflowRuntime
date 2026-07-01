@@ -1,6 +1,6 @@
-# Known Limitations (Phase 2)
+# Known Limitations
 
-Honest scope boundaries for the current implementation slice.
+Honest scope boundaries after Phase 6.
 
 ## Workflow
 
@@ -9,8 +9,9 @@ Honest scope boundaries for the current implementation slice.
 
 ## Storage
 
-- Checkpoints and runs live in process memory only; no durability across restarts.
-- No migration or replay from external storage.
+- `FileStorage` provides JSON file persistence without concurrent writer locking or transactions.
+- No migration between storage schema versions.
+- No encryption at rest.
 
 ## Patch Model
 
@@ -20,7 +21,7 @@ Honest scope boundaries for the current implementation slice.
 ## Approval
 
 - Single approval gate on `node_execute`; no multi-step approval chains.
-- Approval is a boolean + approver_id; no signature or external auth integration.
+- Approval is a boolean + approver_id; adapter does not verify authZ with external IdP.
 
 ## Branching
 
@@ -29,20 +30,20 @@ Honest scope boundaries for the current implementation slice.
 
 ## Identity and Tenancy
 
-- No tenancy, authZ, or adapter-layer routing (deferred to Phase 5 integration).
+- `PlatformAdapter` validates presence of `tenant_id` / `caller_id` but does not enforce platform authZ.
+- Tenant must not leak into RunState; no cross-tenant isolation in core storage paths.
 
 ## Diagnostics
 
-- Structured errors only; no operator UI or report templates (Phase 7).
+- Structured errors and eval JSON reports only; no operator UI (Phase 7).
 
 ## Testing
 
-- Fixed clock injection for timestamps; production wall-clock behavior untested.
-- Five evaluation categories covered; adversarial and integration-boundary suites deferred to Phase 3–4.
+- 51+ pytest cases and 7 eval scenarios; production load and concurrency untested.
 
-## What Phase 2 Proves
+## What Phases 2–6 Prove
 
-- Typed contracts parse and validate.
-- Invariants enforce fail-closed semantics.
-- `run → interrupt → resume` works offline with deterministic tests.
-- Patches and checkpoints behave per contract docs.
+- Typed contracts, invariants, and fail-closed error paths.
+- `run → interrupt → resume` offline and across runtime restart (FileStorage).
+- Parent platform integration via thin adapter boundary.
+- Evaluation baseline ratchet distinguishes regression from improvement.
