@@ -81,3 +81,13 @@ class TestFileStorage:
         with pytest.raises(GroundSealError) as exc:
             rt2.apply_patch(updated, patch)
         assert exc.value.code == "DUPLICATE_PATCH"
+
+    def test_corrupt_run_file_raises(self, storage_dir: Path) -> None:
+        storage = FileStorage(storage_dir)
+        run_id = "corrupt-run-001"
+        path = storage_dir / "runs" / f"{run_id}.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("{not valid json")
+        with pytest.raises(GroundSealError) as exc:
+            storage.load_run(run_id)
+        assert exc.value.code == "STORAGE_CORRUPT"

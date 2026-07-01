@@ -6,7 +6,13 @@
 - [ ] External IdP validation for approver_id in adapter layer.
 - [ ] General workflow graph loading beyond `fixture_approval_v1`.
 
-## Completed
+## Completed (Code Review Polish)
+
+- [x] Close approval bypass via reserved context keys
+- [x] Runtime module split, `persist_run`, module-level `run`/`resume`
+- [x] FileStorage atomic writes, ID validation, corrupt load errors
+- [x] Expanded tests (70), per-scenario eval ratchet
+- [x] [code-review-notes.md](docs/code-review-notes.md)
 
 ### Phase 9
 - [x] [case-study.md](docs/case-study.md)

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from enum import Enum
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -78,7 +78,7 @@ class RunInitialState(BaseModel):
 class PatchOperation(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    op: str
+    op: Literal["set", "delete"]
     path: str
     value: Any | None = None
 

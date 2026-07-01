@@ -61,5 +61,5 @@
       }
     ]
   },
-  "ratchet_reason": "Phase 4 initial baseline"
+  "ratchet_reason": "Code review polish: stricter validation and expanded tests"
 }

@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from groundseal.errors import GroundSealError
+from groundseal.invariants import check_run_state_invariants
 from groundseal.models import Checkpoint, RunState, RunStatus
-from groundseal.runtime import Runtime
+
+if TYPE_CHECKING:
+    from groundseal.diagnostics import RunReader
 
 
 class NodeSummary(BaseModel):
@@ -133,7 +137,7 @@ def build_run_summary(state: RunState, checkpoints: list[Checkpoint] | None = No
         nodes=nodes,
         checkpoints=cp_summaries,
         branches=branches,
-        context_keys=sorted(state.context.keys()),
+        context_keys=sorted(k for k in state.context.keys() if not k.startswith("_")),
         created_at=state.created_at,
         updated_at=state.updated_at,
         narrative=_build_narrative(state, cps),
@@ -183,16 +187,12 @@ def _review_hints(state: RunState) -> list[str]:
     return hints
 
 
-def build_diagnostic_report(runtime: Runtime, run_id: str) -> DiagnosticReport:
-    state = runtime.get_run(run_id)
-    checkpoints = runtime.list_checkpoints(run_id)
-
+def build_diagnostic_report(reader: RunReader, run_id: str) -> DiagnosticReport:
+    state = reader.get_run(run_id)
+    checkpoints = reader.list_checkpoints(run_id)
     summary = build_run_summary(state, checkpoints)
     invariant_status = "ok"
     try:
-        from groundseal.errors import GroundSealError
-        from groundseal.invariants import check_run_state_invariants
-
         check_run_state_invariants(state)
     except GroundSealError:
         invariant_status = "violation"

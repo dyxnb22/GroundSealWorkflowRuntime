@@ -48,9 +48,18 @@ def _scenario_happy_path() -> ScenarioResult:
     initial = RunInitialState(
         workflow_id="fixture_approval_v1",
         run_id="eval-happy-001",
-        context={"branch_key": "a", "_approval_granted": True},
+        context={"branch_key": "a"},
     )
-    result = rt.run(initial)
+    first = rt.run(initial)
+    if not isinstance(first, Interrupt):
+        return ScenarioResult("happy_path_run_complete", "linear_complete", False)
+    result = rt.resume(
+        ResumeInput(
+            run_id=first.run_id,
+            checkpoint_id=first.checkpoint_id,
+            approval=Approval(approved=True, approver_id="eval-reviewer"),
+        )
+    )
     ok = isinstance(result, RunState) and result.status == RunStatus.COMPLETED
     return ScenarioResult("happy_path_run_complete", "linear_complete", ok)
 
@@ -120,7 +129,7 @@ def _scenario_stale_checkpoint() -> ScenarioResult:
     state = rt.get_run(interrupt.run_id)
     bumped = state.model_copy(deep=True)
     bumped.state_version += 5
-    rt._storage.save_run(bumped)
+    rt.persist_run(bumped)
     try:
         rt.resume(
             ResumeInput(
@@ -153,9 +162,18 @@ def _scenario_resume_not_interrupted() -> ScenarioResult:
     initial = RunInitialState(
         workflow_id="fixture_approval_v1",
         run_id="eval-not-interrupted-001",
-        context={"branch_key": "a", "_approval_granted": True},
+        context={"branch_key": "a"},
     )
-    rt.run(initial)
+    first = rt.run(initial)
+    if not isinstance(first, Interrupt):
+        return ScenarioResult("failure_regression", "resume_not_interrupted", False)
+    rt.resume(
+        ResumeInput(
+            run_id=first.run_id,
+            checkpoint_id=first.checkpoint_id,
+            approval=Approval(approved=True, approver_id="eval-reviewer"),
+        )
+    )
     try:
         rt.resume(
             ResumeInput(
@@ -245,11 +263,25 @@ def compare_to_baseline(
 
     stored = json.loads(path.read_text())
     baseline = stored["baseline"]
-    regression = []
+    regression: list[str] = []
     if current["passed"] < baseline["passed"]:
         regression.append("passed_count_decreased")
     if current["pass_rate"] < baseline["pass_rate"]:
         regression.append("pass_rate_decreased")
+
+    baseline_scenarios = {
+        (s["category"], s["name"]): s for s in baseline.get("scenarios", [])
+    }
+    for scenario in current.get("scenarios", []):
+        key = (scenario["category"], scenario["name"])
+        prior = baseline_scenarios.get(key)
+        if prior is None:
+            regression.append(f"new_scenario:{scenario['name']}")
+            continue
+        if scenario["passed"] != prior["passed"]:
+            regression.append(f"scenario_regression:{scenario['name']}")
+        if scenario.get("error_code") != prior.get("error_code") and not scenario["passed"]:
+            regression.append(f"error_code_change:{scenario['name']}")
 
     if regression and not ratchet:
         return {
