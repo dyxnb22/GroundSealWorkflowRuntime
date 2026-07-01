@@ -1,0 +1,11 @@
+{
+  "run_id": "99999999-9999-9999-9999-999999999999",
+  "state_version": 0,
+  "status": "running",
+  "current_node_id": "node_prepare",
+  "node_results": {},
+  "branch_decisions": [],
+  "context": {},
+  "created_at": "2026-07-01T00:00:00Z",
+  "updated_at": "2026-07-01T00:00:00Z"
+}

@@ -1,28 +1,32 @@
 # TASKS.md
 
-## Now
+## Now (Post Phase 9)
 
-- Tighten the subsystem glossary and boundary language across all docs.
-- Define the minimal contract set required before implementation begins.
-- Write initial evaluation case categories and failure buckets.
-- Identify which assumptions come from the parent platform and which belong here.
-- Specify a minimal local development shape that does not overcommit future architecture.
+- [ ] Concurrent FileStorage locking and migration strategy.
+- [ ] External IdP validation for approver_id in adapter layer.
+- [ ] General workflow graph loading beyond `fixture_approval_v1`.
 
-## Next
+## Completed
 
-- Turn core concepts into typed schemas and protocol drafts.
-- Define the first deterministic test and evaluation fixtures.
-- Draft a minimal implementation slice for the first roadmap phase.
-- Document expected failure modes and observable signals.
-- Define the first integration handshake back to a parent workflow.
+### Phase 9
+- [x] [case-study.md](docs/case-study.md)
+- [x] [integration-recommendations.md](docs/integration-recommendations.md)
 
-## Later
+### Phase 8
+- [x] Storage backend comparison experiment
+- [x] Approval denial policy comparison (`ApprovalDenialPolicy`)
+- [x] [experiments/decision-memo.md](docs/experiments/decision-memo.md)
+- [x] `tests/test_experiments.py`
 
-- Implement the minimal viable runtime slice for this subsystem.
-- Expand evaluation depth and regression ratchets.
-- Test integration boundaries under failure conditions.
-- Compare at least two architectural approaches where tradeoffs are real.
-- Produce a concise case-study style summary once the subsystem is credible.
+### Phase 7
+- [x] Diagnostic report schema (`groundseal/diagnostics/`)
+- [x] Human-readable run summary and narrative
+- [x] [review-ux-notes.md](docs/review-ux-notes.md)
+- [x] Adapter diagnostic integration
+- [x] `tests/test_diagnostics.py`
+
+### Phase 6–0
+- [x] See prior TASKS entries (storage, adapter, eval baseline, runtime core, contracts)
 
 ## Sequencing Rules
 

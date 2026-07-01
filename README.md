@@ -57,12 +57,23 @@ Many agent runtimes blur planning, execution, and side effects. This project iso
 - `docs/execution-rhythm.md` — how to keep long-running agent work disciplined.
 - `docs/integration-contract.md` — how this project will plug back into larger systems.
 - `docs/open-questions.md` — unresolved research and implementation questions.
+- `docs/glossary.md` — canonical subsystem vocabulary.
+- `docs/contracts/` — typed contract definitions.
+- `docs/invariants.md` — rules that must always hold.
+- `docs/dev-setup.md` — local development and tech stack.
+- `docs/known-limitations.md` — scope boundaries.
+- `docs/failure-taxonomy.md` — error codes and regression mapping.
+- `docs/storage-contract.md` — persistence contract (Phase 6).
+- `docs/review-ux-notes.md` — operator review flow guidance.
+- `docs/case-study.md` — project case study and lessons.
+- `docs/integration-recommendations.md` — parent platform backfeed.
+- `docs/experiments/` — Phase 8 comparison notes and decision memo.
 
 ## Current Stage
 
-Stage 0 is complete only when the project has clear contracts, explicit
-non-goals, phase boundaries, evaluation intent, and Cursor rules strong enough
-to keep parallel implementation work on track.
+**All roadmap phases (0–9) have baseline artifacts.** The subsystem provides typed contracts, deterministic runtime, persistence, platform adapter, diagnostics, comparative experiments, and integration backfeed documentation.
+
+See [docs/case-study.md](docs/case-study.md) and [docs/roadmap.md](docs/roadmap.md).
 
 ## Relationship To The Parent Platform
 
