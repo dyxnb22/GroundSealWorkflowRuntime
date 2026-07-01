@@ -2,30 +2,24 @@
 
 ## Phase 0: Framing And Contracts
 
+- **Status**: complete
 - Goal: define vocabulary, contracts, boundaries, and non-goals.
-- Why it matters: without this, later implementation quality is mostly luck.
-- Required artifacts: README, brief, architecture, roadmap, evaluation plan.
-- Evaluation criteria: docs are specific enough to guide a new agent with minimal clarification.
-- Exit criteria: future tasks map to explicit phases without ambiguity.
-- Common risks: vague scope, hidden coupling, premature implementation.
+- Artifacts: [glossary.md](glossary.md), [contracts/](contracts/), updated evaluation and integration docs.
+- Exit criteria: met — tasks map to phases; contracts guide implementation.
 
 ## Phase 1: Domain Model Baseline
 
+- **Status**: complete
 - Goal: define the minimal schemas and invariants for the subsystem.
-- Why it matters: implementation quality depends on model clarity.
-- Required artifacts: schema docs, validation notes, example payloads.
-- Evaluation criteria: reviewers can explain the core types and state transitions.
-- Exit criteria: core types and invariants are reviewable and stable enough for a first implementation slice.
-- Common risks: ad-hoc types, ambiguous ownership, hidden state transitions.
+- Artifacts: Pydantic models in `groundseal/models/`, [invariants.md](invariants.md), JSON fixtures in `tests/fixtures/`.
+- Exit criteria: met — core types and invariants are reviewable; schema tests pass.
 
 ## Phase 2: Deterministic Core Slice
 
+- **Status**: complete
 - Goal: implement the smallest useful core behavior with no external dependency sprawl.
-- Why it matters: proves the project can move from paper to executable form.
-- Required artifacts: minimal implementation, unit tests, known limitations.
-- Evaluation criteria: one narrow path works and is testable offline.
-- Exit criteria: the subsystem performs one meaningful end-to-end behavior under deterministic tests.
-- Common risks: overbuilding, confusing prototype code with production direction.
+- Artifacts: `groundseal/runtime/`, 30 passing tests, [known-limitations.md](known-limitations.md).
+- Exit criteria: met — `run → interrupt → resume` path works under deterministic offline tests.
 
 ## Phase 3: Failure Handling And Invariants
 
