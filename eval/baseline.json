@@ -1,0 +1,65 @@
+{
+  "baseline": {
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "pass_rate": 1.0,
+    "metrics": {
+      "categories_covered": 6,
+      "negative_path_count": 3,
+      "deterministic_clock": "2026-07-01T00:00:00Z"
+    },
+    "scenarios": [
+      {
+        "category": "happy_path_run_complete",
+        "name": "linear_complete",
+        "passed": true,
+        "error_code": null,
+        "details": {}
+      },
+      {
+        "category": "interrupt_at_approval_then_resume",
+        "name": "approval_gate",
+        "passed": true,
+        "error_code": null,
+        "details": {}
+      },
+      {
+        "category": "invalid_patch_rejected",
+        "name": "version_mismatch",
+        "passed": true,
+        "error_code": "VERSION_MISMATCH",
+        "details": {}
+      },
+      {
+        "category": "resume_from_stale_checkpoint",
+        "name": "stale_reject",
+        "passed": true,
+        "error_code": "STALE_CHECKPOINT",
+        "details": {}
+      },
+      {
+        "category": "branch_determinism_same_input",
+        "name": "repeatable_branch",
+        "passed": true,
+        "error_code": null,
+        "details": {}
+      },
+      {
+        "category": "failure_regression",
+        "name": "resume_not_interrupted",
+        "passed": true,
+        "error_code": "RUN_TERMINAL",
+        "details": {}
+      },
+      {
+        "category": "failure_regression",
+        "name": "empty_approver_id",
+        "passed": true,
+        "error_code": "INVALID_RESUME_INPUT",
+        "details": {}
+      }
+    ]
+  },
+  "ratchet_reason": "Phase 4 initial baseline"
+}
