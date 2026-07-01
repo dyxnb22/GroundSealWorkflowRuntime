@@ -23,26 +23,15 @@ from groundseal.models import (
 )
 from groundseal.runtime.branching import branch_select
 from groundseal.runtime.checkpointing import emit_checkpoint
-from groundseal.runtime.fixture import FIXTURE_NODES, FIXTURE_WORKFLOW_ID
 from groundseal.runtime.patching import apply_patch
 from groundseal.runtime.timeutil import now
 from groundseal.storage import MemoryStorage, StorageBackend
 from groundseal.validation import sanitize_caller_context, validate_resume_input, validate_run_initial
-
-
-def _find_node(node_id: str) -> NodeDefinition:
-    for node in FIXTURE_NODES:
-        if node.node_id == node_id:
-            return node
-    raise GroundSealError(
-        code="NODE_NOT_FOUND",
-        message=f"Unknown node_id: {node_id}",
-        details={"node_id": node_id},
-    )
+from groundseal.workflow import WorkflowDefinition, WorkflowRegistry, default_registry
 
 
 class Runtime:
-    """Workflow runtime with pluggable storage backend."""
+    """Workflow runtime with pluggable storage and workflow registry."""
 
     def __init__(
         self,
@@ -50,10 +39,12 @@ class Runtime:
         storage: StorageBackend | None = None,
         clock: str | None = None,
         denial_policy: ApprovalDenialPolicy = ApprovalDenialPolicy.FAIL_RUN,
+        workflow_registry: WorkflowRegistry | None = None,
     ) -> None:
         self._storage = storage or MemoryStorage()
         self._clock = clock
         self._denial_policy = denial_policy
+        self._workflows = workflow_registry or default_registry()
 
     def get_run(self, run_id: str) -> RunState:
         state = self._storage.load_run(run_id)
@@ -62,9 +53,28 @@ class Runtime:
         return state
 
     def persist_run(self, state: RunState) -> None:
-        """Persist authoritative run state (used by tests/simulations)."""
         check_run_state_invariants(state)
         self._storage.save_run(state)
+
+    def _workflow_for_state(self, state: RunState) -> WorkflowDefinition:
+        workflow_id = state.context.get("_workflow_id")
+        if not isinstance(workflow_id, str):
+            raise GroundSealError(
+                code="INVARIANT_VIOLATION",
+                message="Run state missing _workflow_id",
+                details={"run_id": state.run_id},
+            )
+        return self._workflows.get(workflow_id)
+
+    def _find_node(self, workflow: WorkflowDefinition, node_id: str) -> NodeDefinition:
+        for node in workflow.nodes:
+            if node.node_id == node_id:
+                return node
+        raise GroundSealError(
+            code="NODE_NOT_FOUND",
+            message=f"Unknown node_id: {node_id}",
+            details={"node_id": node_id, "workflow_id": workflow.workflow_id},
+        )
 
     def _finalize_run(self, state: RunState) -> RunState:
         state = state.model_copy(deep=True)
@@ -132,17 +142,14 @@ class Runtime:
 
     def run(self, initial: RunInitialState) -> RunState | Interrupt:
         validate_run_initial(initial)
-
-        if initial.workflow_id != FIXTURE_WORKFLOW_ID:
-            raise GroundSealError(
-                code="WORKFLOW_NOT_FOUND",
-                message="Unknown workflow_id",
-                details={"workflow_id": initial.workflow_id},
-            )
+        workflow = self._workflows.get(initial.workflow_id)
 
         run_id = initial.run_id or str(uuid.uuid4())
         ts = now(self._clock)
         branch = branch_select(sanitize_caller_context(initial.context))
+
+        context = sanitize_caller_context(initial.context)
+        context["_workflow_id"] = workflow.workflow_id
 
         state = RunState(
             run_id=run_id,
@@ -151,7 +158,7 @@ class Runtime:
             current_node_id=None,
             node_results={},
             branch_decisions=[branch],
-            context=sanitize_caller_context(initial.context),
+            context=context,
             created_at=ts,
             updated_at=ts,
         )
@@ -159,7 +166,7 @@ class Runtime:
         self._storage.save_run(state)
 
         current = state
-        for node in FIXTURE_NODES:
+        for node in workflow.nodes:
             result = self._advance_node(current, node)
             if isinstance(result, Interrupt):
                 return result
@@ -171,6 +178,7 @@ class Runtime:
     def resume(self, resume_input: ResumeInput) -> RunState | Interrupt:
         validate_resume_input(resume_input)
         state = self.get_run(resume_input.run_id)
+        workflow = self._workflow_for_state(state)
 
         if state.status in TERMINAL_STATUSES:
             raise GroundSealError(
@@ -261,7 +269,7 @@ class Runtime:
                 message="Interrupted state missing current_node_id",
             )
 
-        node_def = _find_node(interrupted_node_id)
+        node_def = self._find_node(workflow, interrupted_node_id)
         output = self._execute_node_handler(node_def)
         restored.node_results[interrupted_node_id] = NodeResult(
             node_id=interrupted_node_id,
@@ -272,9 +280,9 @@ class Runtime:
         restored.state_version += 1
         restored.updated_at = now(self._clock)
 
-        start_idx = next(i for i, n in enumerate(FIXTURE_NODES) if n.node_id == interrupted_node_id)
+        start_idx = next(i for i, n in enumerate(workflow.nodes) if n.node_id == interrupted_node_id)
         current = restored
-        for node in FIXTURE_NODES[start_idx + 1 :]:
+        for node in workflow.nodes[start_idx + 1 :]:
             result = self._advance_node(current, node)
             if isinstance(result, Interrupt):
                 return result
@@ -321,5 +329,11 @@ class InMemoryRuntime(Runtime):
         *,
         clock: str | None = None,
         denial_policy: ApprovalDenialPolicy = ApprovalDenialPolicy.FAIL_RUN,
+        workflow_registry: WorkflowRegistry | None = None,
     ) -> None:
-        super().__init__(storage=MemoryStorage(), clock=clock, denial_policy=denial_policy)
+        super().__init__(
+            storage=MemoryStorage(),
+            clock=clock,
+            denial_policy=denial_policy,
+            workflow_registry=workflow_registry,
+        )

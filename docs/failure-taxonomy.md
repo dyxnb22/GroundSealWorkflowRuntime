@@ -24,6 +24,10 @@ Machine-readable failure codes and regression fixture mapping.
 | `CHECKPOINT_NOT_FOUND` | 3 | Checkpoint ID not found | yes |
 | `STORAGE_CORRUPT` | polish | Corrupt persisted JSON | yes |
 | `INVALID_STORAGE_ID` | polish | Unsafe storage identifier | yes |
+| `STORAGE_MIGRATION_FAILED` | v0.3 | Unsupported or newer storage version | yes |
+| `STORAGE_LOCK_TIMEOUT` | v0.3 | Could not acquire per-run file lock | yes |
+| `APPROVER_UNAUTHORIZED` | v0.3 | Approver rejected by adapter validator | yes |
+| `INVALID_WORKFLOW` | v0.3 | Empty or invalid workflow definition | yes |
 
 ## Regression Fixtures
 
@@ -34,6 +38,8 @@ Machine-readable failure codes and regression fixture mapping.
 | terminal resume | `tests/test_failure_paths.py::test_resume_completed_run_rejected` |
 | duplicate patch | `tests/test_failure_paths.py::test_duplicate_patch_rejected` |
 | adapter boundary | `tests/test_integration_boundary.py` |
+| approver auth | `tests/test_approver_auth.py` |
+| storage migration | `tests/test_storage.py::TestStorageMigration` |
 
 ## Observable Signals
 

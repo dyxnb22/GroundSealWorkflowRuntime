@@ -33,6 +33,13 @@ Summary of improvements applied after full codebase review.
 
 ## Remaining Known Gaps
 
-- No concurrent FileStorage locking (documented in TASKS.md).
 - `apply_patch` free function still lacks duplicate tracking (use `Runtime.apply_patch`).
-- Single fixture workflow only.
+- Linear workflow graphs only (no DAG).
+- FileStorage lock uses non-blocking acquire; no retry/backoff policy yet.
+
+## Post-Review Advancement (v0.3.0)
+
+- **FileStorage v2**: per-run locks, `_meta/version.json`, v1→v2 migration.
+- **WorkflowRegistry**: load JSON definitions from `workflows/`; runtime stores `_workflow_id`.
+- **ApproverValidator**: adapter-layer IdP hook; `APPROVER_UNAUTHORIZED` on reject.
+- **Tests**: 70 → 88 (`test_workflow_registry`, `test_approver_auth`, storage migration/locking).

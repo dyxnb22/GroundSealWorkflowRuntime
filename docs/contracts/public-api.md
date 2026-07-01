@@ -33,6 +33,8 @@ outcome = rt.run(RunInitialState(workflow_id="fixture_approval_v1", context={}))
 
 **Errors**: `INVALID_INITIAL_STATE`, `WORKFLOW_NOT_FOUND`
 
+Workflow definitions are resolved via `WorkflowRegistry` (see [workflow-definition.md](workflow-definition.md)). Default registry includes `fixture_approval_v1`; additional graphs load from JSON at startup.
+
 ---
 
 ### `resume(run_id, resume_input) -> RunState | Interrupt`

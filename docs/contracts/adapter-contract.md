@@ -61,4 +61,24 @@ if resp.result_type == "interrupt":
 3. `tenant_id` must never appear in `RunState.context` values.
 4. Subsystem invariants cannot be disabled by adapter callers.
 
-Implementation: `groundseal/adapter/platform.py`
+## Approver Authorization (v0.3.0)
+
+Optional `ApproverValidator` on `PlatformAdapter` validates `approver_id` against tenant policy **before** resume when `approval.approved` is true.
+
+| Implementation | Use case |
+|----------------|----------|
+| `AllowListApproverValidator` | Tests and simple allow-lists |
+| `CallableApproverValidator` | Parent-platform IdP callback |
+
+Unauthorized approvers return `result_type="error"` with code `APPROVER_UNAUTHORIZED`. Denied approvals (`approved=false`) skip validator and follow runtime denial policy.
+
+```python
+from groundseal.adapter import AllowListApproverValidator, PlatformAdapter
+
+adapter = PlatformAdapter(
+    Runtime(),
+    approver_validator=AllowListApproverValidator({"reviewer-a", "reviewer-b"}),
+)
+```
+
+Implementation: `groundseal/adapter/auth.py`

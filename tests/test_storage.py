@@ -91,3 +91,51 @@ class TestFileStorage:
         with pytest.raises(GroundSealError) as exc:
             storage.load_run(run_id)
         assert exc.value.code == "STORAGE_CORRUPT"
+
+
+class TestStorageMigration:
+    def test_v1_layout_migrates_to_v2(self, storage_dir: Path) -> None:
+        (storage_dir / "runs").mkdir(parents=True)
+        (storage_dir / "checkpoints").mkdir()
+        (storage_dir / "patches").mkdir()
+
+        FileStorage(storage_dir)
+
+        version_path = storage_dir / "_meta" / "version.json"
+        assert version_path.exists()
+        assert (storage_dir / "_meta" / "locks").is_dir()
+
+    def test_migrate_storage_idempotent(self, storage_dir: Path) -> None:
+        from groundseal.storage.migration import CURRENT_STORAGE_VERSION, migrate_storage, read_storage_version
+
+        storage_dir.mkdir()
+        result = migrate_storage(storage_dir)
+        assert result["from_version"] == 1
+        assert result["to_version"] == CURRENT_STORAGE_VERSION
+        assert read_storage_version(storage_dir) == CURRENT_STORAGE_VERSION
+
+        again = migrate_storage(storage_dir)
+        assert again["files_touched"] == 0
+
+    def test_newer_storage_version_rejected(self, storage_dir: Path) -> None:
+        from groundseal.storage.migration import write_storage_version
+
+        storage_dir.mkdir()
+        write_storage_version(storage_dir, version=99)
+        with pytest.raises(GroundSealError) as exc:
+            FileStorage(storage_dir)
+        assert exc.value.code == "STORAGE_MIGRATION_FAILED"
+
+
+class TestStorageLocking:
+    def test_lock_files_created_on_write(self, storage_dir: Path) -> None:
+        storage = FileStorage(storage_dir)
+        rt = Runtime(storage=storage, clock=CLOCK)
+        initial = RunInitialState(
+            workflow_id="fixture_approval_v1",
+            run_id="lock-run-001",
+            context={},
+        )
+        rt.run(initial)
+        lock_path = storage_dir / "_meta" / "locks" / "lock-run-001.lock"
+        assert lock_path.exists()
