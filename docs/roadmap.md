@@ -23,39 +23,31 @@
 
 ## Phase 3: Failure Handling And Invariants
 
+- **Status**: complete
 - Goal: make error, denial, and malformed-input paths explicit.
-- Why it matters: safety and reliability are mostly decided at the edges.
-- Required artifacts: failure taxonomy, negative tests, repair notes.
-- Evaluation criteria: major high-risk failure paths are observable and fail predictably.
-- Exit criteria: unsafe or unclear paths fail closed instead of degrading silently.
-- Common risks: happy-path bias, fallback paths with unclear semantics.
+- Artifacts: [failure-taxonomy.md](failure-taxonomy.md), [repair-notes.md](repair-notes.md), `tests/test_failure_paths.py`, `groundseal/validation/`.
+- Exit criteria: met — high-risk paths fail closed with structured errors and regression tests.
 
 ## Phase 4: Evaluation Baseline
 
+- **Status**: complete
 - Goal: measure core quality and regressions.
-- Why it matters: otherwise improvement claims are anecdotal.
-- Required artifacts: fixture suites, metrics, dashboard draft.
-- Evaluation criteria: at least one ratcheted evaluation path exists.
-- Exit criteria: the project can distinguish improvement from accidental change.
-- Common risks: weak metrics, uninformative fixtures, baselines without explanations.
+- Artifacts: `groundseal/evaluation/`, [eval/baseline.json](../eval/baseline.json), `scripts/run_eval.py`, CI workflow, [evaluation-baseline-report.md](evaluation-baseline-report.md).
+- Exit criteria: met — ratcheted baseline distinguishes improvement from regression.
 
 ## Phase 5: Integration Contract
 
+- **Status**: complete
 - Goal: define how parent systems call into GroundSealWorkflowRuntime.
-- Why it matters: a subsystem is only reusable when its boundary is explicit.
-- Required artifacts: adapter contract, input/output examples, boundary tests.
-- Evaluation criteria: integration assumptions are small and explicit.
-- Exit criteria: the subsystem can be consumed without deep internal knowledge.
-- Common risks: leaky abstractions, caller-driven invariant weakening.
+- Artifacts: `groundseal/adapter/`, [contracts/adapter-contract.md](contracts/adapter-contract.md), `tests/test_integration_boundary.py`.
+- Exit criteria: met — subsystem consumable via adapter without deep internal knowledge.
 
 ## Phase 6: Durable Or Multi-Run Behavior
 
-- Goal: add persistence, replay, lifecycle, or multi-step behavior where relevant.
-- Why it matters: many subsystem failures only appear after the first run.
-- Required artifacts: storage notes, lifecycle model, migration concerns.
-- Evaluation criteria: longer-lived behavior does not break earlier guarantees.
-- Exit criteria: repeatable or durable behavior is intentionally designed, not accidental.
-- Common risks: hidden state, replay drift, migration shortcuts.
+- **Status**: complete (minimal file persistence)
+- Goal: add persistence and multi-session resume where relevant.
+- Artifacts: `groundseal/storage/`, [storage-contract.md](storage-contract.md), `tests/test_storage.py`.
+- Exit criteria: met — interrupt/resume survives runtime restart with FileStorage.
 
 ## Phase 7: Operator And Reviewer Experience
 

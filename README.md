@@ -61,13 +61,16 @@ Many agent runtimes blur planning, execution, and side effects. This project iso
 - `docs/contracts/` — typed contract definitions.
 - `docs/invariants.md` — rules that must always hold.
 - `docs/dev-setup.md` — local development and tech stack.
-- `docs/known-limitations.md` — Phase 2 scope boundaries.
+- `docs/known-limitations.md` — scope boundaries.
+- `docs/failure-taxonomy.md` — error codes and regression mapping.
+- `docs/storage-contract.md` — persistence contract (Phase 6).
+- `docs/evaluation-baseline-report.md` — eval report template.
 
 ## Current Stage
 
-Phase 2 (Deterministic Core Slice) is complete. The project has typed contracts, Pydantic schemas, invariant enforcement, an in-memory runtime, and 30 deterministic tests covering five evaluation case categories.
+Phase 6 (Durable Multi-Run Behavior) baseline is complete. The runtime supports file-backed persistence, platform adapter integration, expanded failure-path regression tests, and a ratcheted evaluation baseline with CI.
 
-Next: Phase 3 — expand failure handling and negative-path coverage.
+Next: Phase 7 — operator diagnostics and review UX.
 
 See [docs/roadmap.md](docs/roadmap.md) and [docs/known-limitations.md](docs/known-limitations.md).
 

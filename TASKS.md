@@ -1,42 +1,50 @@
 # TASKS.md
 
-## Now (Phase 3)
+## Now (Phase 7)
 
-- [ ] Expand negative-path tests beyond Phase 2 baseline (adversarial inputs, malformed resume).
-- [ ] Promote failure taxonomy entries into dedicated regression fixtures.
-- [ ] Document repair notes for any newly discovered failure clusters.
+- [ ] Define diagnostic report schema for operator/reviewer consumption.
+- [ ] Add human-readable run summary from RunState + checkpoints.
+- [ ] Document review UX notes without building full UI.
 
-## Next (Phase 4–5)
+## Next (Phase 8–9)
 
-- [ ] Add evaluation baseline ratchet and CI reporting.
-- [ ] Define parent platform adapter handshake tests.
-- [ ] Extend [integration-contract.md](docs/integration-contract.md) with adapter examples.
+- [ ] Compare at least two architectural approaches (e.g., storage backends, approval policies).
+- [ ] Produce case-study summary and integration backfeed memo.
 
-## Later (Phase 6+)
+## Later
 
-- Persistent checkpoint storage and replay semantics.
-- Operator diagnostics and review UX.
-- Comparative architectural experiments and case study.
+- Concurrent storage locking and migration strategy.
+- Richer parent platform authZ integration in adapter.
 
 ## Completed
 
+### Phase 6
+- [x] StorageBackend abstraction and FileStorage JSON persistence
+- [x] Multi-session interrupt/resume tests (`tests/test_storage.py`)
+- [x] [storage-contract.md](docs/storage-contract.md)
+
+### Phase 5
+- [x] PlatformAdapter and adapter contract
+- [x] Integration boundary tests
+- [x] Extended [integration-contract.md](docs/integration-contract.md)
+
+### Phase 4
+- [x] Evaluation baseline runner and ratchet (`groundseal/evaluation/`, `scripts/run_eval.py`)
+- [x] Committed [eval/baseline.json](eval/baseline.json)
+- [x] GitHub Actions CI workflow
+- [x] [evaluation-baseline-report.md](docs/evaluation-baseline-report.md)
+
+### Phase 3
+- [x] Input validation layer (`groundseal/validation/`)
+- [x] Negative-path regression tests (`tests/test_failure_paths.py`)
+- [x] [failure-taxonomy.md](docs/failure-taxonomy.md) and [repair-notes.md](docs/repair-notes.md)
+
 ### Phase 2
-- [x] In-memory runtime: `run`, `resume`, `apply_patch`, `emit_checkpoint`
-- [x] `fixture_approval_v1` two-node workflow with approval interrupt
-- [x] Deterministic tests for five evaluation case categories (30 tests)
+- [x] In-memory runtime and 30+ core tests
 - [x] [known-limitations.md](docs/known-limitations.md)
 
-### Phase 1
-- [x] Pydantic models from [docs/contracts/](docs/contracts/)
-- [x] Schema and invariant tests with JSON fixtures
-- [x] [docs/invariants.md](docs/invariants.md)
-
-### Phase 0
-- [x] Glossary and boundary language — [docs/glossary.md](docs/glossary.md)
-- [x] Minimal contract set — [docs/contracts/](docs/contracts/)
-- [x] Evaluation case categories — [docs/evaluation-plan.md](docs/evaluation-plan.md)
-- [x] Platform-neutral vs adapter-local boundaries — [docs/integration-contract.md](docs/integration-contract.md)
-- [x] Local dev shape — [docs/dev-setup.md](docs/dev-setup.md)
+### Phase 1 & 0
+- [x] Schemas, invariants, contracts, glossary — see prior entries
 
 ## Sequencing Rules
 

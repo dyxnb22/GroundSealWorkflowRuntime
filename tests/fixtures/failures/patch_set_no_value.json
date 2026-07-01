@@ -1,0 +1,5 @@
+{
+  "patch_id": "fail-patch-002",
+  "target_version": 1,
+  "operations": [{"op": "set", "path": "context.x", "value": null}]
+}
