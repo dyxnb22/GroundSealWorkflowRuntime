@@ -41,9 +41,13 @@ Honest scope boundaries after Phase 6.
 
 - 51+ pytest cases and 7 eval scenarios; production load and concurrency untested.
 
-## What Phases 2–6 Prove
+## What Phases 2–9 Prove
 
 - Typed contracts, invariants, and fail-closed error paths.
 - `run → interrupt → resume` offline and across runtime restart (FileStorage).
 - Parent platform integration via thin adapter boundary.
 - Evaluation baseline ratchet distinguishes regression from improvement.
+- Operator-readable diagnostics without custom UI.
+- Evidence-backed policy choices (storage default, denial policy).
+
+## Post-Roadmap Gaps

@@ -64,15 +64,16 @@ Many agent runtimes blur planning, execution, and side effects. This project iso
 - `docs/known-limitations.md` — scope boundaries.
 - `docs/failure-taxonomy.md` — error codes and regression mapping.
 - `docs/storage-contract.md` — persistence contract (Phase 6).
-- `docs/evaluation-baseline-report.md` — eval report template.
+- `docs/review-ux-notes.md` — operator review flow guidance.
+- `docs/case-study.md` — project case study and lessons.
+- `docs/integration-recommendations.md` — parent platform backfeed.
+- `docs/experiments/` — Phase 8 comparison notes and decision memo.
 
 ## Current Stage
 
-Phase 6 (Durable Multi-Run Behavior) baseline is complete. The runtime supports file-backed persistence, platform adapter integration, expanded failure-path regression tests, and a ratcheted evaluation baseline with CI.
+**All roadmap phases (0–9) have baseline artifacts.** The subsystem provides typed contracts, deterministic runtime, persistence, platform adapter, diagnostics, comparative experiments, and integration backfeed documentation.
 
-Next: Phase 7 — operator diagnostics and review UX.
-
-See [docs/roadmap.md](docs/roadmap.md) and [docs/known-limitations.md](docs/known-limitations.md).
+See [docs/case-study.md](docs/case-study.md) and [docs/roadmap.md](docs/roadmap.md).
 
 ## Relationship To The Parent Platform
 

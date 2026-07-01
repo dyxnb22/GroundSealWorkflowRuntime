@@ -9,6 +9,13 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 
 
+class ApprovalDenialPolicy(str, Enum):
+    """Phase 8 experiment: behavior when approval is denied."""
+
+    FAIL_RUN = "fail_run"
+    REMAIN_INTERRUPTED = "remain_interrupted"
+
+
 class RunStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
