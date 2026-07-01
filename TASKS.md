@@ -1,9 +1,19 @@
 # TASKS.md
 
-## Now (Post Phase 9)
+## Baseline Closure (v0.3.0)
+
+- [x] Roadmap phases 0–9 complete
+- [x] Post-review TASKS (locking, migration, workflow registry, approver auth)
+- [x] Docs synced: known-limitations, case-study, integration-recommendations
+- [x] **88** pytest + **7** eval scenarios passing
+
+Subsystem is ready as a typed integration baseline for parent platform handoff.
+
+## Now (Post Baseline)
 
 - [ ] DAG workflow graphs (beyond linear node lists).
 - [ ] Cross-process lock retry policy for FileStorage.
+- [ ] Cross-tenant storage isolation in FileStorage paths.
 
 ## Completed (Post-Review Advancement v0.3.0)
 
