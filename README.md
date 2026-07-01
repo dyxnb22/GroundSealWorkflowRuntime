@@ -71,9 +71,11 @@ Many agent runtimes blur planning, execution, and side effects. This project iso
 
 ## Current Stage
 
-**All roadmap phases (0–9) have baseline artifacts.** The subsystem provides typed contracts, deterministic runtime, persistence, platform adapter, diagnostics, comparative experiments, and integration backfeed documentation.
+**v0.3.0 subsystem baseline — ready for parent platform integration.**
 
-See [docs/case-study.md](docs/case-study.md) and [docs/roadmap.md](docs/roadmap.md).
+All roadmap phases (0–9) are complete, plus post-review hardening: FileStorage v2 (locking + migration), JSON workflow registry, and optional `ApproverValidator` for approver IdP checks. **88** pytest cases and **7** eval baseline scenarios pass.
+
+See [docs/case-study.md](docs/case-study.md), [docs/roadmap.md](docs/roadmap.md), and [TASKS.md](TASKS.md) for deferred work (DAG graphs, lock retry).
 
 ## Relationship To The Parent Platform
 

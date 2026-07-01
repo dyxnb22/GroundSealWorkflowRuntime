@@ -50,7 +50,8 @@ response = adapter.start_run(
 
 - tenancy and identity enforcement (`PlatformRunRequest.tenant_id`)
 - external audit sink routing (`PlatformEvidence`)
-- authZ for approval actions
+- authZ for approval actions — optional `ApproverValidator` on `PlatformAdapter` (v0.3.0)
+- workflow catalog registration via `WorkflowRegistry` (v0.3.0)
 - persistence backend selection — see [storage-contract.md](storage-contract.md)
 
 ## Boundary Tests
@@ -59,5 +60,5 @@ response = adapter.start_run(
 
 ## Questions To Resolve Later
 
-- where tenancy and identity should be enforced in the adapter beyond presence checks
-- how much evidence should flow back to the caller by default
+- cross-tenant storage isolation strategy (adapter-scoped roots vs core enforcement)
+- how much evidence should flow back to the caller by default (`include_diagnostic` is opt-in today)

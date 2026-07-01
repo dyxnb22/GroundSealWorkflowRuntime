@@ -51,14 +51,11 @@ python scripts/run_eval.py --report
 python -c "from groundseal.models import export_schemas; export_schemas()"
 ```
 
-## Fixture Workflow (Phase 2)
+## Workflows
 
-Hardcoded linear workflow `fixture_approval_v1`:
+Default registry includes `fixture_approval_v1` (linear: `node_prepare` → `node_execute` with approval gate). Additional graphs load from `workflows/*.json` via `WorkflowRegistry.load_directory(...)`.
 
-1. `node_prepare` — no approval; sets context fields
-2. `node_execute` — requires approval; interrupt before completion
-
-No external services, models, or databases in Phase 2.
+No external services, models, or databases required for local tests.
 
 ## Determinism Rules
 
