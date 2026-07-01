@@ -1,0 +1,12 @@
+---
+description: Evaluation-first rules for GroundSealWorkflowRuntime
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+- No implementation slice is complete without a stated evaluation intent.
+- Prefer deterministic fixtures before live integrations.
+- Track negative-path behavior, not only happy-path success.
+- Treat unexplained metric regressions as blockers.
+- Preserve enough evidence to understand why results changed.

@@ -1,0 +1,12 @@
+---
+description: Project boundary rules for GroundSealWorkflowRuntime
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+- This repository exists to build GroundSealWorkflowRuntime, not a general-purpose agent platform.
+- Keep work aligned to the subsystem focus: state models, node contracts, checkpoints, approval interruption, resume semantics, deterministic branching, and workflow diagnostics.
+- Before implementation, map each task to a roadmap phase.
+- Do not add neighboring subsystems unless the integration contract explicitly requires it.
+- Favor clarity, contracts, and evaluability over scope growth.

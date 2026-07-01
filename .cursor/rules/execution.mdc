@@ -1,0 +1,12 @@
+---
+description: Execution rules for long-running Cursor work in GroundSealWorkflowRuntime
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+- Start from README, PROJECT_BRIEF, roadmap, and tasks.
+- Prefer docs -> contracts -> tests -> implementation.
+- Every substantial work round should leave a visible durable artifact.
+- Update roadmap or task sequencing before large changes in direction.
+- Record failures and unexpected findings instead of silently routing around them.

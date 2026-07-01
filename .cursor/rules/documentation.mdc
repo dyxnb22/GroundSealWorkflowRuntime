@@ -1,0 +1,13 @@
+---
+description: Documentation rules for GroundSealWorkflowRuntime
+globs:
+  - "*.md"
+  - "docs/**/*.md"
+alwaysApply: true
+---
+
+- Keep documents concrete, restrained, and implementation-guiding.
+- Avoid marketing language and broad claims without evidence.
+- Prefer updating canonical docs over adding scratch planning files.
+- When documenting a tradeoff, state what was chosen, why, and what remains uncertain.
+- Ensure docs help future agents make narrower and better decisions.
