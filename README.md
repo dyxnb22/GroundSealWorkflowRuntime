@@ -55,6 +55,8 @@ Many agent runtimes blur planning, execution, and side effects. This project iso
 - `docs/evaluation-plan.md` — how quality and regressions will be measured.
 - `docs/failure-analysis-plan.md` — how failures are classified and reviewed.
 - `docs/execution-rhythm.md` — how to keep long-running agent work disciplined.
+- `docs/integration-contract.md` — how this project will plug back into larger systems.
+- `docs/open-questions.md` — unresolved research and implementation questions.
 - `docs/glossary.md` — canonical subsystem vocabulary.
 - `docs/contracts/` — typed contract definitions.
 - `docs/invariants.md` — rules that must always hold.
