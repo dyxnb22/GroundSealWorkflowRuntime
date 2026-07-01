@@ -13,20 +13,23 @@ Rationale: contract-first validation, deterministic fixtures, low dependency sur
 
 ```text
 groundseal/
-  __init__.py
   models/           # Pydantic models
-  invariants/       # Pure invariant checks
-  runtime/          # Phase 2 in-memory runtime
-  errors.py         # Structured error types
+  invariants/       # Invariant checks
+  runtime/          # Runtime engine
+  adapter/          # Phase 5 platform adapter
+  evaluation/       # Phase 4 baseline runner
+  storage/          # Phase 6 persistence backends
+  validation/       # Phase 3 input validation
+  errors.py
 tests/
   fixtures/         # JSON fixtures by eval category
-  test_schemas.py
-  test_invariants.py
-  test_runtime.py
+  test_*.py
+eval/
+  baseline.json     # Ratcheted evaluation baseline
+scripts/
+  run_eval.py
 docs/
-  contracts/        # Contract docs (Phase 0)
-  glossary.md
-  invariants.md
+  contracts/
 pyproject.toml
 ```
 
@@ -41,18 +44,18 @@ pip install -e ".[dev]"
 # Run tests
 pytest -v
 
+# Run evaluation baseline
+python scripts/run_eval.py --report
+
 # Export JSON schemas (optional)
 python -c "from groundseal.models import export_schemas; export_schemas()"
 ```
 
-## Fixture Workflow (Phase 2)
+## Workflows
 
-Hardcoded linear workflow `fixture_approval_v1`:
+Default registry includes `fixture_approval_v1` (linear: `node_prepare` → `node_execute` with approval gate). Additional graphs load from `workflows/*.json` via `WorkflowRegistry.load_directory(...)`.
 
-1. `node_prepare` — no approval; sets context fields
-2. `node_execute` — requires approval; interrupt before completion
-
-No external services, models, or databases in Phase 2.
+No external services, models, or databases required for local tests.
 
 ## Determinism Rules
 
@@ -60,8 +63,8 @@ No external services, models, or databases in Phase 2.
 - `run_id` and UUIDs supplied by fixtures where reproducibility matters.
 - No network, randomness, or wall-clock dependence in tests.
 
-## Non-Goals (Phase 2 dev setup)
+## Non-Goals
 
-- Docker / CI pipeline (Phase 4)
-- Persistent storage
-- Parent platform adapter
+- Concurrent multi-writer storage
+- Full operator UI (Phase 7)
+- External model or LLM integration

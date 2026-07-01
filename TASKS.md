@@ -1,42 +1,55 @@
 # TASKS.md
 
-## Now (Phase 3)
+## Baseline Closure (v0.3.0)
 
-- [ ] Expand negative-path tests beyond Phase 2 baseline (adversarial inputs, malformed resume).
-- [ ] Promote failure taxonomy entries into dedicated regression fixtures.
-- [ ] Document repair notes for any newly discovered failure clusters.
+- [x] Roadmap phases 0–9 complete
+- [x] Post-review TASKS (locking, migration, workflow registry, approver auth)
+- [x] Docs synced: known-limitations, case-study, integration-recommendations
+- [x] **88** pytest + **7** eval scenarios passing
 
-## Next (Phase 4–5)
+Subsystem is ready as a typed integration baseline for parent platform handoff.
 
-- [ ] Add evaluation baseline ratchet and CI reporting.
-- [ ] Define parent platform adapter handshake tests.
-- [ ] Extend [integration-contract.md](docs/integration-contract.md) with adapter examples.
+## Now (Post Baseline)
 
-## Later (Phase 6+)
+- [ ] DAG workflow graphs (beyond linear node lists).
+- [ ] Cross-process lock retry policy for FileStorage.
+- [ ] Cross-tenant storage isolation in FileStorage paths.
 
-- Persistent checkpoint storage and replay semantics.
-- Operator diagnostics and review UX.
-- Comparative architectural experiments and case study.
+## Completed (Post-Review Advancement v0.3.0)
 
-## Completed
+- [x] Concurrent FileStorage locking (`fcntl` per-run locks)
+- [x] Storage migration v1→v2 (`ensure_storage_ready`, `_meta/version.json`)
+- [x] External IdP validation hook (`ApproverValidator` in adapter)
+- [x] Workflow registry + JSON graph loading (`workflows/*.json`)
+- [x] Tests (88), docs: [workflow-definition.md](docs/contracts/workflow-definition.md)
 
-### Phase 2
-- [x] In-memory runtime: `run`, `resume`, `apply_patch`, `emit_checkpoint`
-- [x] `fixture_approval_v1` two-node workflow with approval interrupt
-- [x] Deterministic tests for five evaluation case categories (30 tests)
-- [x] [known-limitations.md](docs/known-limitations.md)
+## Completed (Code Review Polish)
 
-### Phase 1
-- [x] Pydantic models from [docs/contracts/](docs/contracts/)
-- [x] Schema and invariant tests with JSON fixtures
-- [x] [docs/invariants.md](docs/invariants.md)
+- [x] Close approval bypass via reserved context keys
+- [x] Runtime module split, `persist_run`, module-level `run`/`resume`
+- [x] FileStorage atomic writes, ID validation, corrupt load errors
+- [x] Expanded tests (70), per-scenario eval ratchet
+- [x] [code-review-notes.md](docs/code-review-notes.md)
 
-### Phase 0
-- [x] Glossary and boundary language — [docs/glossary.md](docs/glossary.md)
-- [x] Minimal contract set — [docs/contracts/](docs/contracts/)
-- [x] Evaluation case categories — [docs/evaluation-plan.md](docs/evaluation-plan.md)
-- [x] Platform-neutral vs adapter-local boundaries — [docs/integration-contract.md](docs/integration-contract.md)
-- [x] Local dev shape — [docs/dev-setup.md](docs/dev-setup.md)
+### Phase 9
+- [x] [case-study.md](docs/case-study.md)
+- [x] [integration-recommendations.md](docs/integration-recommendations.md)
+
+### Phase 8
+- [x] Storage backend comparison experiment
+- [x] Approval denial policy comparison (`ApprovalDenialPolicy`)
+- [x] [experiments/decision-memo.md](docs/experiments/decision-memo.md)
+- [x] `tests/test_experiments.py`
+
+### Phase 7
+- [x] Diagnostic report schema (`groundseal/diagnostics/`)
+- [x] Human-readable run summary and narrative
+- [x] [review-ux-notes.md](docs/review-ux-notes.md)
+- [x] Adapter diagnostic integration
+- [x] `tests/test_diagnostics.py`
+
+### Phase 6–0
+- [x] See prior TASKS entries (storage, adapter, eval baseline, runtime core, contracts)
 
 ## Sequencing Rules
 

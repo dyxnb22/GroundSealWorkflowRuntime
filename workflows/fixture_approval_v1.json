@@ -1,0 +1,9 @@
+{
+  "workflow_id": "fixture_approval_v1",
+  "version": "1",
+  "description": "Linear prepare → execute with approval gate",
+  "nodes": [
+    {"node_id": "node_prepare", "requires_approval": false, "handler": "prepare"},
+    {"node_id": "node_execute", "requires_approval": true, "handler": "execute"}
+  ]
+}

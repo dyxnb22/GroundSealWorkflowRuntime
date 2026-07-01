@@ -1,16 +1,20 @@
-# Known Limitations (Phase 2)
+# Known Limitations
 
-Honest scope boundaries for the current implementation slice.
+Honest scope boundaries after v0.3.0 baseline closure.
 
 ## Workflow
 
-- Only one hardcoded workflow: `fixture_approval_v1` (linear 2-node: `node_prepare` → `node_execute`).
-- No generic DAG, dynamic graph loading, or parallel node execution.
+- **Linear node lists only** — workflows are ordered sequences, not DAGs.
+- Graphs load from JSON via `WorkflowRegistry` (`workflows/*.json`); built-in default remains `fixture_approval_v1`.
+- Handlers are fixture handlers (`prepare`, `execute`); no arbitrary side-effect executors.
+- No parallel node execution or dynamic graph mutation at runtime.
 
 ## Storage
 
-- Checkpoints and runs live in process memory only; no durability across restarts.
-- No migration or replay from external storage.
+- `FileStorage` v2: JSON files, per-run `fcntl` locks, v1→v2 migration on init.
+- Non-blocking lock acquire only; no retry/backoff policy (`STORAGE_LOCK_TIMEOUT` on contention).
+- No transactions across runs; no encryption at rest.
+- No cross-tenant path isolation in core storage (tenant is adapter-local).
 
 ## Patch Model
 
@@ -19,30 +23,41 @@ Honest scope boundaries for the current implementation slice.
 
 ## Approval
 
-- Single approval gate on `node_execute`; no multi-step approval chains.
-- Approval is a boolean + approver_id; no signature or external auth integration.
+- Single approval gate per node (`requires_approval`); no multi-step approval chains.
+- Optional `ApproverValidator` on adapter validates `approver_id` when `approved=true`; parent must inject policy (allow-list or IdP callback).
+- Denied approvals follow runtime `ApprovalDenialPolicy`; validator is not invoked.
 
 ## Branching
 
-- One deterministic branch decision at Run start from `context.branch_key`.
+- One deterministic branch decision at run start from `context.branch_key`.
 - No conditional edges between arbitrary nodes.
 
 ## Identity and Tenancy
 
-- No tenancy, authZ, or adapter-layer routing (deferred to Phase 5 integration).
+- `PlatformAdapter` validates presence of `tenant_id` / `caller_id` and blocks tenant leakage into `RunState`.
+- No platform-wide authZ beyond optional approver validation hook.
+- Tenant must not appear in RunState; storage does not partition by tenant.
 
 ## Diagnostics
 
-- Structured errors only; no operator UI or report templates (Phase 7).
+- Structured errors, eval JSON reports, and `DiagnosticReport` summaries; no operator UI.
 
 ## Testing
 
-- Fixed clock injection for timestamps; production wall-clock behavior untested.
-- Five evaluation categories covered; adversarial and integration-boundary suites deferred to Phase 3–4.
+- **88** pytest cases and **7** eval baseline scenarios; production load and multi-writer stress untested.
 
-## What Phase 2 Proves
+## What Phases 0–9 + v0.3.0 Prove
 
-- Typed contracts parse and validate.
-- Invariants enforce fail-closed semantics.
-- `run → interrupt → resume` works offline with deterministic tests.
-- Patches and checkpoints behave per contract docs.
+- Typed contracts, invariants, and fail-closed error paths.
+- `run → interrupt → resume` offline and across runtime restart (FileStorage).
+- Parent platform integration via thin adapter boundary with optional approver auth.
+- JSON workflow loading beyond a single hardcoded graph.
+- Evaluation baseline ratchet distinguishes regression from improvement.
+- Operator-readable diagnostics without custom UI.
+- Evidence-backed policy choices (storage default, denial policy).
+
+## Post-Baseline Work (TASKS Now)
+
+- DAG workflow graphs.
+- FileStorage lock retry/backoff policy.
+- Cross-tenant storage isolation in FileStorage paths.

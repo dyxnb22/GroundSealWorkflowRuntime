@@ -4,9 +4,16 @@ from __future__ import annotations
 
 import json
 from enum import Enum
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
+
+
+class ApprovalDenialPolicy(str, Enum):
+    """Phase 8 experiment: behavior when approval is denied."""
+
+    FAIL_RUN = "fail_run"
+    REMAIN_INTERRUPTED = "remain_interrupted"
 
 
 class RunStatus(str, Enum):
@@ -71,7 +78,7 @@ class RunInitialState(BaseModel):
 class PatchOperation(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    op: str
+    op: Literal["set", "delete"]
     path: str
     value: Any | None = None
 

@@ -8,6 +8,16 @@ Define the narrow public surface for GroundSealWorkflowRuntime.
 
 ### `run(initial_state) -> RunState | Interrupt`
 
+Prefer `Runtime.run()` or the module wrapper `groundseal.run()`:
+
+```python
+from groundseal import Runtime, RunInitialState, run
+
+rt = Runtime()
+outcome = rt.run(RunInitialState(workflow_id="fixture_approval_v1", context={}))
+# or: outcome = run(RunInitialState(...))
+```
+
 **Input**: `RunInitialState`
 
 | Field | Type | Required |
@@ -23,13 +33,15 @@ Define the narrow public surface for GroundSealWorkflowRuntime.
 
 **Errors**: `INVALID_INITIAL_STATE`, `WORKFLOW_NOT_FOUND`
 
+Workflow definitions are resolved via `WorkflowRegistry` (see [workflow-definition.md](workflow-definition.md)). Default registry includes `fixture_approval_v1`; additional graphs load from JSON at startup.
+
 ---
 
 ### `resume(run_id, resume_input) -> RunState | Interrupt`
 
 See [interrupt-resume.md](interrupt-resume.md).
 
-**Errors**: `RUN_NOT_FOUND`, `RUN_NOT_INTERRUPTED`, `APPROVAL_DENIED`, `STALE_CHECKPOINT`
+**Errors**: `RUN_NOT_FOUND`, `RUN_NOT_INTERRUPTED`, `RUN_TERMINAL`, `INVALID_RESUME_INPUT`, `APPROVAL_DENIED`, `CHECKPOINT_NOT_FOUND`, `STALE_CHECKPOINT`, `CHECKPOINT_RUN_MISMATCH`, `NODE_NOT_FOUND`
 
 ---
 

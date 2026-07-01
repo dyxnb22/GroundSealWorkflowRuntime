@@ -42,4 +42,4 @@ Rules that must always hold in GroundSealWorkflowRuntime. Enforced in `groundsea
 |----|------|----------------|
 | RE-1 | Resume only when `status == interrupted` | `RUN_NOT_INTERRUPTED` |
 | RE-2 | Checkpoint version must not be older than current state | `STALE_CHECKPOINT` |
-| RE-3 | Denied approval transitions Run to `failed` | `APPROVAL_DENIED` |
+| RE-3 | Denied approval: default `FAIL_RUN` → `failed`; optional `REMAIN_INTERRUPTED` keeps `interrupted` | `APPROVAL_DENIED` |
